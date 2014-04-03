@@ -55,7 +55,7 @@ def as_json(params={})
 
 end
 
-Decoupleserialization code from Active Record models.
+Decouple serialization code from Active Record models.
 
 gem 'active_model_serializers', github: 'rails_api/active_model_serializers'
 
