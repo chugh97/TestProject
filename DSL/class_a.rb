@@ -24,7 +24,7 @@ def do_something(user, &block)
 end
 
 
-# implementing a DSL 
+# implementing a DSL
 do_something 'chughs' do
   add_task 'get up and make breakfast'
   add_task 'go to work'

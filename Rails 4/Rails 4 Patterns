@@ -1,0 +1,99 @@
+Rails 4 Patterns
+
+-Avoid Fat controllers
+
+- Decouple from database hooks as far as possible
+
+- callbacks okay when no external dependencies
+
+- God object pattern
+
+- Use PORO objects responsible for just one thing, need not be AR inherited objects
+
+Class methods and scopes
+-----------------------
+ scope :by_author ->(param) { }
+
+chain able scopes using merge
+
+Rails 3 - chained scopes - last scope overrides the originals scope
+
+Rails 4 - default behaviour is append scopes. Can use merge scopes if Rails 3 behaviour is required.
+
+Concerns
+-------
+
+app/models/concerns
+app/controllers/concerns
+
+using:
+extend ActiveSupport::Concern
+
+included do
+  #any instance methods
+end
+
+ClassMethods are also included automatically.
+
+Duplicate code is removed into smaller modules with repeating functionality.
+
+Decorators
+----------
+- More refined than view helpers which pollute the global namespace.
+
+- View specific log can be encapsulated and exposed using a Rails Decorator.
+
+app/decorators folder is the location where decorators lie in.
+
+Active Record Serializers
+-------------------------
+
+API to expose JSON
+Serialization
+
+def as_json(params={})
+
+end
+
+Decoupleserialization code from Active Record models.
+
+gem 'active_model_serializers', github: 'rails_api/active_model_serializers'
+
+Remove jbuilder from file.
+
+rails g serializer Item
+
+class ItemSerializer < ActiveModel::Serializer
+  attributes :id
+end
+
+render json:@items, serializer: NameOfSerializerClass
+
+or override it in ActiveRecord
+
+def active_model_serilaizer
+  SomeSerializerClass
+end
+
+
+JSON construction with child entities
+
+use has_many :comments, embed: ids
+
+add classes to app/serializers directory
+
+Fine Tuning
+----------
+use pluck - improve memory footprint
+
+
+gem 'puma' for a better production server
+
+puma -p 3000
+
+procfiles
+
+web: bundle exec rails s -p3000
+
+gen install foreman
+foreman start
