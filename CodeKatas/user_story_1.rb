@@ -3,14 +3,19 @@ module CodeKatas
   class Digit
     attr_accessor :top_left, :top_middle, :top_right, :middle_left, :middle_middle, :middle_right, :bottom_left, :bottom_middle, :bottom_right
 
-    attr_accessor :digit_identifier
+    attr_accessor :digit_identifier, :other_possibilities
 
     def as_array
       [:top_left, :top_middle, :top_right, :middle_left, :middle_middle, :middle_right, :bottom_left, :bottom_middle, :bottom_right]
     end
-
   end
 
+  class Output
+    attr_accessor :account_number, :possible_matches
+    def initialize
+      @possible_matches =[]
+    end
+  end
 
   class UserStory1
     one = Digit.new()
@@ -24,6 +29,7 @@ module CodeKatas
     one.bottom_left = " "
     one.bottom_middle = " "
     one.bottom_right = "|"
+    one.other_possibilities = [7]
 
     two = Digit.new()
     two.digit_identifier = 2
@@ -72,6 +78,7 @@ module CodeKatas
     five.bottom_left = " "
     five.bottom_middle = "_"
     five.bottom_right = "|"
+    five.other_possibilities = [9,6]
 
     six = Digit.new()
     six.digit_identifier = 6
@@ -132,6 +139,7 @@ module CodeKatas
     zero.bottom_left = "|"
     zero.bottom_middle = "_"
     zero.bottom_right = "|"
+    zero.other_possibilities = [8]
 
     DIGITS = [one, two, three, four, five, six, seven, eight, nine, zero]
 
@@ -168,6 +176,7 @@ module CodeKatas
         bank_account.each do |line_as_array|
           @grouped_array << line_as_array.scan(/./).each_slice(3).to_a
         end
+        outputReport = CodeKatas::Output.new
 
         digits_to_identify_groups = convert_array_in_groups_of_numbers
 
@@ -177,12 +186,70 @@ module CodeKatas
           if parsed_value_array
             output << parsed_value_array.digit_identifier
           else
-            output << '?' 
+            possible_numbers = try_a_possibility(parse_digit(group))
+            possible_numbers.each do |possible_number|
+              temp_output = Array.new(output)
+              temp_output << possible_number
+              outputReport.possible_matches << temp_output
+            end
+            output << "?"
           end
         end
-        @output_accounts << output.join("")
-        puts "The account number is #{output.join("")}"
+
+
+        outputReport.account_number = output.join("")
+
+        @output_accounts << outputReport
+        #puts "The account number is #{output.join("")}"
       end
+    end
+
+    def try_a_possibility(parse_digit)
+      probable_numbers = []
+      DIGITS.each do |digit|
+        match_count = 0
+        #puts "trying to match #{digit.digit_identifier}"
+        if digit.top_left == parse_digit.top_left
+          match_count += 1
+        end
+
+        if digit.top_middle == parse_digit.top_middle
+          match_count += 1
+        end
+
+        if digit.top_right == parse_digit.top_right
+          match_count += 1
+        end
+
+        if digit.middle_left == parse_digit.middle_left
+          match_count += 1
+        end
+
+        if digit.middle_middle == parse_digit.middle_middle
+          match_count += 1
+        end
+        if digit.middle_right == parse_digit.middle_right
+          match_count += 1
+        end
+
+        if digit.bottom_left == parse_digit.bottom_left
+          match_count += 1
+        end
+
+        if digit.bottom_middle == parse_digit.bottom_middle
+          match_count += 1
+        end
+
+        if digit.bottom_right == parse_digit.bottom_right
+          match_count += 1
+        end
+
+        if match_count >=8
+          probable_numbers << digit.digit_identifier
+        end
+        #puts "The match count is #{match_count} for #{digit.digit_identifier}"
+      end
+      probable_numbers
     end
 
     def convert_array_in_groups_of_numbers
@@ -231,5 +298,17 @@ module CodeKatas
 end
 
 
-x = CodeKatas::UserStory1.new("./bank_accounts_2.txt")
+x = CodeKatas::UserStory1.new("./bank_accounts_4.txt")
 x.read_file_and_list_account_numbers
+
+x.output_accounts.each do |account|
+  str = "Account Number #{account.account_number}"
+  if account.possible_matches
+    account_list = ""
+    account.possible_matches.each do |possible_match|
+      account_list += possible_match.join("") + ","
+    end
+    str += " Possible matches [#{account_list.chomp(',')}]"
+  end
+  puts str
+end

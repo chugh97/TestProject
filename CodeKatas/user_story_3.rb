@@ -13,13 +13,13 @@ module CodeKatas
 
       @parser.output_accounts.each do |account|
         validation_status = @validator_klass.new(account).check_sum_of_account_number
-        puts "#{account} #{validation_status}"
+        puts "#{account.account_number} #{validation_status}"
       end
     end
 
   end
 end
 
-x = CodeKatas::UserStory3.new(:validator_klass => CodeKatas::UserStory2, :parser => CodeKatas::UserStory1.new("./bank_accounts.txt"))
+x = CodeKatas::UserStory3.new(:validator_klass => CodeKatas::UserStory2, :parser => CodeKatas::UserStory1.new("./bank_accounts_4.txt"))
 
 x.check_and_report
