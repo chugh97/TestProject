@@ -135,10 +135,12 @@ module CodeKatas
 
     DIGITS = [one, two, three, four, five, six, seven, eight, nine, zero]
 
+    attr_accessor :output_accounts
+
     def initialize(file_path)
       @file_path = file_path
       @contents = []
-      @grouped_array = []
+      @output_accounts = []
     end
 
     def read_file_and_list_account_numbers
@@ -176,7 +178,7 @@ module CodeKatas
           parsed_value_array = compare_unidentified_digit_and_try_recognise(parse_digit(group))
           output << parsed_value_array.digit_identifier if parsed_value_array
         end
-
+        @output_accounts << output.join("")
         puts "The account number is #{output.join("")}"
       end
     end
