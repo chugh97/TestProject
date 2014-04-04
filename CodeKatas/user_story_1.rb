@@ -3,6 +3,8 @@ module CodeKatas
   class Digit
     attr_accessor :top_left, :top_middle, :top_right, :middle_left, :middle_middle, :middle_right, :bottom_left, :bottom_middle, :bottom_right
 
+    attr_accessor :digit_identifier
+
     def as_array
       [:top_left, :top_middle, :top_right, :middle_left, :middle_middle, :middle_right, :bottom_left, :bottom_middle, :bottom_right]
     end
@@ -11,19 +13,20 @@ module CodeKatas
 
 
   class UserStory1
-
     one = Digit.new()
+    one.digit_identifier = 1
     one.top_left = " "
     one.top_middle = " "
     one.top_right = " "
     one.middle_left = " "
     one.middle_middle = " "
-    one.middle_right = " "
+    one.middle_right = "|"
     one.bottom_left = " "
-    one.bottom_middle = "|"
+    one.bottom_middle = " "
     one.bottom_right = "|"
 
     two = Digit.new()
+    two.digit_identifier = 2
     two.top_left = " "
     two.top_middle = "_"
     two.top_right = " "
@@ -35,6 +38,7 @@ module CodeKatas
     two.bottom_right = " "
 
     three = Digit.new()
+    three.digit_identifier = 3
     three.top_left = " "
     three.top_middle = "_"
     three.top_right = " "
@@ -46,6 +50,7 @@ module CodeKatas
     three.bottom_right = "|"
 
     four = Digit.new()
+    four.digit_identifier = 4
     four.top_left = " "
     four.top_middle = " "
     four.top_right = " "
@@ -57,6 +62,7 @@ module CodeKatas
     four.bottom_right = "|"
 
     five = Digit.new()
+    five.digit_identifier = 5
     five.top_left = " "
     five.top_middle = "_"
     five.top_right = " "
@@ -68,6 +74,7 @@ module CodeKatas
     five.bottom_right = "|"
 
     six = Digit.new()
+    six.digit_identifier = 6
     six.top_left = " "
     six.top_middle = "_"
     six.top_right = " "
@@ -79,6 +86,7 @@ module CodeKatas
     six.bottom_right = "|"
 
     seven = Digit.new()
+    seven.digit_identifier = 7
     seven.top_left = " "
     seven.top_middle = "_"
     seven.top_right = " "
@@ -90,6 +98,7 @@ module CodeKatas
     seven.bottom_right = "|"
 
     eight = Digit.new()
+    eight.digit_identifier = 8
     eight.top_left = " "
     eight.top_middle = "_"
     eight.top_right = " "
@@ -101,6 +110,7 @@ module CodeKatas
     eight.bottom_right = "|"
 
     nine = Digit.new()
+    nine.digit_identifier = 9
     nine.top_left = " "
     nine.top_middle = "_"
     nine.top_right = " "
@@ -112,6 +122,7 @@ module CodeKatas
     nine.bottom_right = "|"
 
     zero = Digit.new()
+    zero.digit_identifier = 0
     zero.top_left = " "
     zero.top_middle = "_"
     zero.top_right = " "
@@ -122,11 +133,99 @@ module CodeKatas
     zero.bottom_middle = "_"
     zero.bottom_right = "|"
 
-    DIGITS = [zero, one, two, three, four, five, six, seven, eight, nine]
+    DIGITS = [one, two, three, four, five, six, seven, eight, nine, zero]
 
-    def initialize(contents)
-      @file_contents = contents
+    def initialize(file_path)
+      @file_path = file_path
+      @contents = []
+      @grouped_array = []
     end
+
+    def read_file_and_list_account_numbers
+      f = File.open(@file_path, "r")
+      f.each_line do |line|
+        line.chomp!()
+        while (line.length <= 27)
+          line << " "
+        end
+        @contents << line[0..27]
+      end
+      f.close
+
+      @bank_account_numbers = @contents.each_slice(3).to_a
+
+      split_array_in_groups
+    end
+
+    private
+
+    def split_array_in_groups
+      @bank_account_numbers.each do |bank_account|
+        output = []
+        @grouped_array = []
+        bank_account.each do |line_as_array|
+          @grouped_array << line_as_array.scan(/./).each_slice(3).to_a
+        end
+
+        digits_to_identify_groups = convert_array_in_groups_of_numbers
+
+        digits_to_identify_groups.each do |group|
+          if !group[0]
+            puts "here"
+          end
+          parsed_value_array = compare_unidentified_digit_and_try_recognise(parse_digit(group))
+          output << parsed_value_array.digit_identifier if parsed_value_array
+        end
+
+        puts "The account number is #{output.join("")}"
+      end
+    end
+
+    def convert_array_in_groups_of_numbers
+      groups = []
+      (0..8).each do |i|
+        groups << [@grouped_array[0][i],@grouped_array[1][i], @grouped_array[2][i]]
+      end
+      groups
+    end
+
+    def parse_digit(group)
+      top_line = group[0]
+      middle_line = group[1]
+      bottom_line = group[2]
+
+      unidentified_digit = Digit.new
+
+      unidentified_digit.top_left = top_line[0]
+      unidentified_digit.top_middle = top_line[1]
+      unidentified_digit.top_right = top_line[2]
+
+      unidentified_digit.middle_left  = middle_line[0]
+      unidentified_digit.middle_middle  = middle_line[1]
+      unidentified_digit.middle_right = middle_line[2]
+
+      unidentified_digit.bottom_left  = bottom_line[0]
+      unidentified_digit.bottom_middle  = bottom_line[1]
+      unidentified_digit.bottom_right = bottom_line[2]
+
+      unidentified_digit
+    end
+
+    def compare_unidentified_digit_and_try_recognise(parse_digit)
+      DIGITS.each do |digit|
+        #puts "trying to match #{digit.digit_identifier}"
+        if digit.top_left == parse_digit.top_left && digit.top_middle == parse_digit.top_middle && digit.top_right == parse_digit.top_right &&
+           digit.middle_left == parse_digit.middle_left && digit.middle_middle == parse_digit.middle_middle && digit.middle_right == parse_digit.middle_right &&
+           digit.bottom_left == parse_digit.bottom_left && digit.bottom_middle == parse_digit.bottom_middle && digit.bottom_right == parse_digit.bottom_right
+           return digit
+        end
+      end
+      nil
+    end
+
   end
 end
 
+
+x = CodeKatas::UserStory1.new("./bank_accounts.txt")
+x.read_file_and_list_account_numbers
