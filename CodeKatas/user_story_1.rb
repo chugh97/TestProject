@@ -172,11 +172,13 @@ module CodeKatas
         digits_to_identify_groups = convert_array_in_groups_of_numbers
 
         digits_to_identify_groups.each do |group|
-          if !group[0]
-            puts "here"
-          end
           parsed_value_array = compare_unidentified_digit_and_try_recognise(parse_digit(group))
-          output << parsed_value_array.digit_identifier if parsed_value_array
+
+          if parsed_value_array
+            output << parsed_value_array.digit_identifier
+          else
+            output << '?' 
+          end
         end
         @output_accounts << output.join("")
         puts "The account number is #{output.join("")}"
@@ -229,5 +231,5 @@ module CodeKatas
 end
 
 
-x = CodeKatas::UserStory1.new("./bank_accounts.txt")
+x = CodeKatas::UserStory1.new("./bank_accounts_2.txt")
 x.read_file_and_list_account_numbers
