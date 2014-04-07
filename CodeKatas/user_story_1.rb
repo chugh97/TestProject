@@ -11,7 +11,7 @@ module CodeKatas
   end
 
   class Output
-    attr_accessor :account_number, :possible_matches
+    attr_accessor :account_number, :possible_matches, :original_account_number
     def initialize
       @possible_matches =[]
     end
@@ -103,6 +103,7 @@ module CodeKatas
     seven.bottom_left = " "
     seven.bottom_middle = " "
     seven.bottom_right = "|"
+    seven.other_possibilities = [1]
 
     eight = Digit.new()
     eight.digit_identifier = 8
@@ -115,6 +116,7 @@ module CodeKatas
     eight.bottom_left = "|"
     eight.bottom_middle = "_"
     eight.bottom_right = "|"
+    eight.other_possibilities = [0]
 
     nine = Digit.new()
     nine.digit_identifier = 9
@@ -169,18 +171,45 @@ module CodeKatas
 
     private
 
+    def original_account_number
+      @bank_account_numbers.each do |bank_account|
+        output = []
+        gp_array = []
+        bank_account.each do |line_as_array|
+          gp_array << line_as_array.scan(/./).each_slice(3).to_a
+        end
+
+        digits_to_identify_groups = convert_array_in_groups_of_numbers(gp_array)
+
+        digits_to_identify_groups.each do |group|
+          parsed_value_array = compare_unidentified_digit_and_try_recognise(parse_digit(group))
+
+          if !parsed_value_array
+            output << "?"
+          else
+            output << parsed_value_array.digit_identifier
+          end
+        end
+
+
+       puts "---Original Account Number #{output.join('')}"
+      end
+    end
+
     def split_array_in_groups
       @bank_account_numbers.each do |bank_account|
         output = []
+
+        temp_output = ""
         @grouped_array = []
         bank_account.each do |line_as_array|
           @grouped_array << line_as_array.scan(/./).each_slice(3).to_a
         end
         outputReport = CodeKatas::Output.new
 
-        digits_to_identify_groups = convert_array_in_groups_of_numbers
+        digits_to_identify_groups = convert_array_in_groups_of_numbers(@grouped_array)
 
-        digits_to_identify_groups.each do |group|
+        digits_to_identify_groups.each_with_index do |group, index|
           parsed_value_array = compare_unidentified_digit_and_try_recognise(parse_digit(group))
 
           if parsed_value_array
@@ -188,17 +217,15 @@ module CodeKatas
           else
             possible_numbers = try_a_possibility(parse_digit(group))
             possible_numbers.each do |possible_number|
-              temp_output = Array.new(output)
-              temp_output << possible_number
-              outputReport.possible_matches << temp_output
+
+              #temp_output << possible_number
+              outputReport.possible_matches << [[possible_number, index]]
             end
             output << "?"
           end
         end
 
-
         outputReport.account_number = output.join("")
-
         @output_accounts << outputReport
         #puts "The account number is #{output.join("")}"
       end
@@ -252,10 +279,10 @@ module CodeKatas
       probable_numbers
     end
 
-    def convert_array_in_groups_of_numbers
+    def convert_array_in_groups_of_numbers(gp_array)
       groups = []
       (0..8).each do |i|
-        groups << [@grouped_array[0][i],@grouped_array[1][i], @grouped_array[2][i]]
+        groups << [gp_array[0][i],gp_array[1][i], gp_array[2][i]]
       end
       groups
     end
@@ -297,18 +324,3 @@ module CodeKatas
   end
 end
 
-
-x = CodeKatas::UserStory1.new("./bank_accounts_4.txt")
-x.read_file_and_list_account_numbers
-
-x.output_accounts.each do |account|
-  str = "Account Number #{account.account_number}"
-  if account.possible_matches
-    account_list = ""
-    account.possible_matches.each do |possible_match|
-      account_list += possible_match.join("") + ","
-    end
-    str += " Possible matches [#{account_list.chomp(',')}]"
-  end
-  puts str
-end
